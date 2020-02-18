@@ -36,7 +36,7 @@ int main(int argc, char * argv[]) {
   int master_fd;
   struct addrinfo host_info;
   struct addrinfo * host_info_list;
-  const char * hostname = NULL;
+  const char * hostname = "0.0.0.0";  //bind to address 0.0.0.0
   const char * port = argv[1];
 
   memset(&host_info, 0, sizeof(host_info));
