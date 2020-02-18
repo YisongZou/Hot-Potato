@@ -5,6 +5,8 @@
 #include <cstring>
 #include <iostream>
 
+#include "helper.hpp"
+
 using namespace std;
 
 int main(int argc, char * argv[]) {
@@ -19,11 +21,6 @@ int main(int argc, char * argv[]) {
   struct addrinfo * host_info_list;
   const char * hostname = argv[1];
   const char * port = argv[2];
-
-  if (argc < 3) {
-    cout << "Syntax: client <hostname>\n" << endl;
-    return 1;
-  }
 
   memset(&host_info, 0, sizeof(host_info));
   host_info.ai_family = AF_UNSPEC;
@@ -54,7 +51,26 @@ int main(int argc, char * argv[]) {
     return -1;
   }  //if
 
-  const char * message = "hi there!";
+  string player_id;
+  string num_player;
+  char buffer[512];
+  recv(socket_fd, buffer, 512, 0);
+  buffer[511] = 0;
+  //  cout << "Player received: " << buffer << endl;
+  string initial(buffer);
+  initial_parser(player_id, num_player, initial);
+  cout << "Connected as player " << player_id << " out of " << num_player
+       << " total players " << endl;
+
+  string left_fd;
+  string right_fd;
+  memset(buffer, '\0', sizeof(buffer));
+  recv(socket_fd, buffer, 512, 0);
+  string neighbor(buffer);
+  neighbor_parser(left_fd, right_fd, neighbor);
+  cout << left_fd << "\n" << right_fd;
+
+  const char * message = "Ready!";
   send(socket_fd, message, strlen(message), 0);
 
   freeaddrinfo(host_info_list);
