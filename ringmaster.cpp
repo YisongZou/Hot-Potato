@@ -32,6 +32,7 @@ int main(int argc, char * argv[]) {
   cout << "Hops = " << num_hops << endl;
 
   vector<int> player_fd(num_players, 0);  //Used to store all the player_fd
+  vector<string> player_ip(num_players);
   int status;
   int master_fd;
   struct addrinfo host_info;
@@ -88,6 +89,9 @@ int main(int argc, char * argv[]) {
       cerr << "Error: cannot accept connection on socket" << endl;
       return -1;
     }  //if
+    char ip[50];
+    player_ip[i] =
+        inet_ntop(socket_addr.ss_family, (struct sockaddr *)&socket_addr, ip, 50);
     stringstream temp;
     temp << "Player No:";
     temp << i;
@@ -100,26 +104,27 @@ int main(int argc, char * argv[]) {
 
   //send neighbor information
   for (int j = 0; j < num_players; j++) {
-    int left_fd;
-    int right_fd;
+    string left_ip;
+    string right_ip;
     if (j == 0) {
-      left_fd = player_fd[num_players - 1];
-      right_fd = player_fd[j + 1];
+      left_ip = player_ip[num_players - 1];
+      right_ip = player_ip[j + 1];
     }
     else if (j == num_players - 1) {
-      left_fd = player_fd[j - 1];
-      right_fd = player_fd[0];
+      left_ip = player_ip[j - 1];
+      right_ip = player_ip[0];
     }
     else {
-      left_fd = player_fd[j - 1];
-      right_fd = player_fd[j + 1];
+      left_ip = player_ip[j - 1];
+      right_ip = player_ip[j + 1];
     }
     stringstream temp;
     temp << "Neighbors:";
-    temp << left_fd;
+    temp << left_ip;
     temp << ",";
-    temp << right_fd;
+    temp << right_ip;
     const char * message = temp.str().c_str();
+    cout << temp.str();
     send(player_fd[j], message, strlen(message), 0);
     char buffer[512];
     recv(player_fd[j], buffer, 512, 0);
