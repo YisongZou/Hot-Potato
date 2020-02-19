@@ -8,6 +8,16 @@
 #include "helper.hpp"
 using namespace std;
 
+void *get_in_addr(struct sockaddr *sa)
+{
+	if (sa->sa_family == AF_INET) {
+		return &(((struct sockaddr_in*)sa)->sin_addr);
+	}
+
+	return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+
 int main(int argc, char * argv[]) {
   //Check if the number of command line arguments is correct
   if (argc != 4) {
@@ -91,14 +101,12 @@ int main(int argc, char * argv[]) {
     }  //if
     if (socket_addr.ss_family == AF_INET) {
       char ip4[INET_ADDRSTRLEN];
-      struct sockaddr_in sa;
-      inet_ntop(AF_INET, &(sa.sin_addr), ip4, INET_ADDRSTRLEN);
+      inet_ntop(AF_INET, get_in_addr((struct sockaddr * )& socket_addr), ip4, INET_ADDRSTRLEN);
       player_ip[i] = ip4;
     }
     else {
       char ip6[INET6_ADDRSTRLEN];
-      struct sockaddr_in6 sa6;
-      inet_ntop(AF_INET6, &(sa6.sin6_addr), ip6, INET6_ADDRSTRLEN);
+     inet_ntop(AF_INET6, get_in_addr((struct sockaddr * )& socket_addr), ip6, INET6_ADDRSTRLEN);
       player_ip[i] = ip6;
     }
     cout << "/" << player_ip[i] << "/" << endl;
