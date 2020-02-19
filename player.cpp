@@ -81,7 +81,7 @@ int main(int argc, char * argv[]) {
   recv(socket_fd, buffer, 512, 0);
   string neighbor(buffer);
   neighbor_parser(left_ip, right_ip, neighbor);
-  cout << left_ip << endl;
+  
   const char * message = "Ready!";
   send(socket_fd, message, strlen(message), 0);
 
@@ -158,6 +158,8 @@ int main(int argc, char * argv[]) {
     close(server_fd);
   }
 
+
+  sleep(2);
   //////////////As the client of the left player
   int client_status;
   int client_fd;
@@ -165,11 +167,11 @@ int main(int argc, char * argv[]) {
   struct addrinfo * client_info_list;
   const char * client_hostname = left_ip.c_str();
   int client_port_num = 0;
-  if (atoi(player_id.c_str()) == atoi(num_player.c_str()) - 1) {
-    client_port_num = 1 + atoi(port);
+  if (atoi(player_id.c_str()) == 0) {
+    client_port_num = atoi(port) + atoi(num_player.c_str());
   }
   else {
-    client_port_num = atoi(player_id.c_str()) + 2 + atoi(port);
+    client_port_num = atoi(player_id.c_str())  + atoi(port);
   }
   const char * client_port = to_string(client_port_num).c_str();
 

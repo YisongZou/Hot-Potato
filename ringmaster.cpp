@@ -89,7 +89,7 @@ int main(int argc, char * argv[]) {
   }  //if
 
   //  cout << "Waiting for connection on port " << port << endl;
-
+ 
   //Creat the players and send them information
   for (int i = 0; i < num_players; i++) {
     struct sockaddr_storage socket_addr;
@@ -120,6 +120,7 @@ int main(int argc, char * argv[]) {
     send(player_fd[i], message, strlen(message), 0);
   }
 
+  usleep(1);
   //send neighbor information
   for (int j = 0; j < num_players; j++) {
     string left_ip;
