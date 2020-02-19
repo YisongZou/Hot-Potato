@@ -158,8 +158,9 @@ int main(int argc, char * argv[]) {
     close(server_fd);
   }
 
-
-  sleep(2);
+  if(player_id == "0"){
+  sleep(1);
+  }
   //////////////As the client of the left player
   int client_status;
   int client_fd;
