@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
   cout << "Hops = " << num_hops << endl;
 
   vector<int> player_fd(num_players, 0);  //Used to store all the player_fd
-  vector<string> player_ip(num_players);
+  vector<string> player_ip(num_players, " ");
   int status;
   int master_fd;
   struct addrinfo host_info;
@@ -118,13 +118,8 @@ int main(int argc, char * argv[]) {
       left_ip = player_ip[j - 1];
       right_ip = player_ip[j + 1];
     }
-    stringstream temp;
-    temp << "Neighbors:";
-    temp << left_ip;
-    temp << ",";
-    temp << right_ip;
-    const char * message = temp.str().c_str();
-    cout << temp.str();
+    string temp = "Neighbors:" + left_ip + "," + right_ip;
+    const char * message = temp.c_str();
     send(player_fd[j], message, strlen(message), 0);
     char buffer[512];
     recv(player_fd[j], buffer, 512, 0);
