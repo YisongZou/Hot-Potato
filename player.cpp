@@ -15,6 +15,18 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
+  char temp[128];
+  if (gethostname(temp, sizeof(temp)) == -1) {
+    return -1;
+  }
+  struct hostent * hent;
+  hent = gethostbyname(temp);
+  if (NULL == hent) {
+    return -1;
+  }
+  string temps = (*hent).h_name;
+  cout << temps << endl;
+
   int status;
   int socket_fd;
   struct addrinfo host_info;
@@ -69,7 +81,7 @@ int main(int argc, char * argv[]) {
   recv(socket_fd, buffer, 512, 0);
   string neighbor(buffer);
   neighbor_parser(left_ip, right_ip, neighbor);
-
+  cout << left_ip << endl;
   const char * message = "Ready!";
   send(socket_fd, message, strlen(message), 0);
 
@@ -80,7 +92,7 @@ int main(int argc, char * argv[]) {
     int server_fd;
     struct addrinfo server_info;
     struct addrinfo * server_info_list;
-    const char * server_hostname = "0.0.0.0";
+    const char * server_hostname = NULL;
     int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
     const char * server_port = to_string(server_port_num).c_str();
 
@@ -194,10 +206,10 @@ int main(int argc, char * argv[]) {
   }  //if
 
   const char * message_left = "hi there!";
-  send(socket_fd, message_left, strlen(message), 0);
+  send(client_fd, message_left, strlen(message), 0);
 
-  freeaddrinfo(host_info_list);
-  close(socket_fd);
+  freeaddrinfo(client_info_list);
+  close(client_fd);
 
   ///////////////The other players except for player0  establish as server later
   if (player_id != "0") {
@@ -205,7 +217,7 @@ int main(int argc, char * argv[]) {
     int server_fd;
     struct addrinfo server_info;
     struct addrinfo * server_info_list;
-    const char * server_hostname = "0.0.0.0";
+    const char * server_hostname = NULL;
     int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
     const char * server_port = to_string(server_port_num).c_str();
 

@@ -89,9 +89,19 @@ int main(int argc, char * argv[]) {
       cerr << "Error: cannot accept connection on socket" << endl;
       return -1;
     }  //if
-    char ip[50];
-    player_ip[i] =
-        inet_ntop(socket_addr.ss_family, (struct sockaddr *)&socket_addr, ip, 50);
+    if (socket_addr.ss_family == AF_INET) {
+      char ip4[INET_ADDRSTRLEN];
+      struct sockaddr_in sa;
+      inet_ntop(AF_INET, &(sa.sin_addr), ip4, INET_ADDRSTRLEN);
+      player_ip[i] = ip4;
+    }
+    else {
+      char ip6[INET6_ADDRSTRLEN];
+      struct sockaddr_in6 sa6;
+      inet_ntop(AF_INET6, &(sa6.sin6_addr), ip6, INET6_ADDRSTRLEN);
+      player_ip[i] = ip6;
+    }
+    cout << "/" << player_ip[i] << "/" << endl;
     stringstream temp;
     temp << "Player No:";
     temp << i;
