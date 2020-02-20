@@ -15,18 +15,6 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
-  char temp[128];
-  if (gethostname(temp, sizeof(temp)) == -1) {
-    return -1;
-  }
-  struct hostent * hent;
-  hent = gethostbyname(temp);
-  if (NULL == hent) {
-    return -1;
-  }
-  string temps = (*hent).h_name;
-  cout << temps << endl;
-
   int status;
   int socket_fd;
   struct addrinfo host_info;
@@ -81,7 +69,7 @@ int main(int argc, char * argv[]) {
   recv(socket_fd, buffer, 512, 0);
   string neighbor(buffer);
   neighbor_parser(left_ip, right_ip, neighbor);
-  
+
   const char * message = "Ready!";
   send(socket_fd, message, strlen(message), 0);
 
@@ -152,15 +140,15 @@ int main(int argc, char * argv[]) {
     recv(client_connection_fd, buffer, 512, 0);
     //buffer[511] = 0;
 
-    cout << "Server received: " << buffer << endl;
+    //    cout << "Server received: " << buffer << endl;
 
     freeaddrinfo(server_info_list);
     close(server_fd);
   }
 
-  if(player_id == "0"){
-  sleep(1);
-  }
+  memset(buffer, '\0', sizeof(buffer));  //Reset buffer
+  recv(socket_fd, buffer, 512, 0);
+  //  cout << buffer << endl;
   //////////////As the client of the left player
   int client_status;
   int client_fd;
@@ -172,7 +160,7 @@ int main(int argc, char * argv[]) {
     client_port_num = atoi(port) + atoi(num_player.c_str());
   }
   else {
-    client_port_num = atoi(player_id.c_str())  + atoi(port);
+    client_port_num = atoi(player_id.c_str()) + atoi(port);
   }
   const char * client_port = to_string(client_port_num).c_str();
 
@@ -280,19 +268,21 @@ int main(int argc, char * argv[]) {
     recv(client_connection_fd, buffer, 512, 0);
     //buffer[511] = 0;
 
-    cout << "Server received: " << buffer << endl;
+    //cout << "Server received: " << buffer << endl;
 
     freeaddrinfo(server_info_list);
     close(server_fd);
   }
 
   //////////////////////////////////////////////
-  char host_name[128];
+
+  /*char host_name[128];
   if (gethostname(host_name, sizeof(host_name)) == -1) {
     cerr << "Error: cannot gethostname" << endl;
     return -1;
   }
   cout << "hostname:" << host_name << endl;
+  */
   freeaddrinfo(host_info_list);
   close(socket_fd);
 

@@ -8,15 +8,13 @@
 #include "helper.hpp"
 using namespace std;
 
-void *get_in_addr(struct sockaddr *sa)
-{
-	if (sa->sa_family == AF_INET) {
-		return &(((struct sockaddr_in*)sa)->sin_addr);
-	}
+void * get_in_addr(struct sockaddr * sa) {
+  if (sa->sa_family == AF_INET) {
+    return &(((struct sockaddr_in *)sa)->sin_addr);
+  }
 
-	return &(((struct sockaddr_in6*)sa)->sin6_addr);
+  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
-
 
 int main(int argc, char * argv[]) {
   //Check if the number of command line arguments is correct
@@ -89,7 +87,7 @@ int main(int argc, char * argv[]) {
   }  //if
 
   //  cout << "Waiting for connection on port " << port << endl;
- 
+
   //Creat the players and send them information
   for (int i = 0; i < num_players; i++) {
     struct sockaddr_storage socket_addr;
@@ -101,12 +99,14 @@ int main(int argc, char * argv[]) {
     }  //if
     if (socket_addr.ss_family == AF_INET) {
       char ip4[INET_ADDRSTRLEN];
-      inet_ntop(AF_INET, get_in_addr((struct sockaddr * )& socket_addr), ip4, INET_ADDRSTRLEN);
+      inet_ntop(
+          AF_INET, get_in_addr((struct sockaddr *)&socket_addr), ip4, INET_ADDRSTRLEN);
       player_ip[i] = ip4;
     }
     else {
       char ip6[INET6_ADDRSTRLEN];
-     inet_ntop(AF_INET6, get_in_addr((struct sockaddr * )& socket_addr), ip6, INET6_ADDRSTRLEN);
+      inet_ntop(
+          AF_INET6, get_in_addr((struct sockaddr *)&socket_addr), ip6, INET6_ADDRSTRLEN);
       player_ip[i] = ip6;
     }
     cout << "/" << player_ip[i] << "/" << endl;
@@ -149,6 +149,13 @@ int main(int argc, char * argv[]) {
       cout << " is ready to play" << endl;
     }
   }
+  for (int k = 1; k < num_players; k++) {
+    string Connect = "Connect";
+    send(player_fd[k], Connect.c_str(), strlen(Connect.c_str()), 0);
+    usleep(500);
+  }
+  string Connect = "Connect";
+  send(player_fd[0], Connect.c_str(), strlen(Connect.c_str()), 0);
 
   freeaddrinfo(host_info_list);
   close(master_fd);
