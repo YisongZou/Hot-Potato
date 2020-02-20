@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "helper.hpp"
-
+#include "potato.hpp"
 using namespace std;
 
 int main(int argc, char * argv[]) {
@@ -73,17 +73,26 @@ int main(int argc, char * argv[]) {
   const char * message = "Ready!";
   send(socket_fd, message, strlen(message), 0);
 
-  ///////////////As the server of the right player
-  //The players except for player 0 establishes as clients first, the player 0 establishes first as server  and  start to shape the ring
-  if (player_id == "0") {
-    int status_server;
+
+
+int status_server;
     int server_fd;
     struct addrinfo server_info;
     struct addrinfo * server_info_list;
     const char * server_hostname = NULL;
     int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
     const char * server_port = to_string(server_port_num).c_str();
-
+  ///////////////As the server of the right player
+  //The players except for player 0 establishes as clients first, the player 0 establishes first as server  and  start to shape the ring
+  if (player_id == "0") {
+    /*int status_server;
+    int server_fd;
+    struct addrinfo server_info;
+    struct addrinfo * server_info_list;
+    const char * server_hostname = NULL;
+    int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
+    const char * server_port = to_string(server_port_num).c_str();
+    */
     memset(&server_info, 0, sizeof(server_info));
 
     server_info.ai_family = AF_UNSPEC;
@@ -142,9 +151,11 @@ int main(int argc, char * argv[]) {
 
     //    cout << "Server received: " << buffer << endl;
 
+    /*
     freeaddrinfo(server_info_list);
     close(server_fd);
-  }
+    */  
+}
 
   memset(buffer, '\0', sizeof(buffer));  //Reset buffer
   recv(socket_fd, buffer, 512, 0);
@@ -204,14 +215,14 @@ int main(int argc, char * argv[]) {
 
   ///////////////The other players except for player0  establish as server later
   if (player_id != "0") {
-    int status_server;
+    /*int status_server;
     int server_fd;
     struct addrinfo server_info;
     struct addrinfo * server_info_list;
     const char * server_hostname = NULL;
     int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
     const char * server_port = to_string(server_port_num).c_str();
-
+    */
     memset(&server_info, 0, sizeof(server_info));
 
     server_info.ai_family = AF_UNSPEC;
@@ -269,13 +280,13 @@ int main(int argc, char * argv[]) {
     //buffer[511] = 0;
 
     //cout << "Server received: " << buffer << endl;
-
+    /*
     freeaddrinfo(server_info_list);
     close(server_fd);
-  }
+    */  
+}
 
   //////////////////////////////////////////////
-
   /*char host_name[128];
   if (gethostname(host_name, sizeof(host_name)) == -1) {
     cerr << "Error: cannot gethostname" << endl;
@@ -283,8 +294,29 @@ int main(int argc, char * argv[]) {
   }
   cout << "hostname:" << host_name << endl;
   */
-  freeaddrinfo(host_info_list);
-  close(socket_fd);
 
+  //Recieve potato from ringmaster
+  potato temp_potato;
+  temp_potato.count = 0;
+        temp_potato.hops = 0;
+	memset(temp_potato.ip, '\0', sizeof(temp_potato.ip));
+        	recv(socket_fd, &temp_potato, sizeof(temp_potato), 0);
+		temp_potato.ip[temp_potato.count] = player_id[0];
+	  temp_potato.count++;
+	  cout << "Trace of potato:" << endl;
+	  for (int l = 0; l < temp_potato.count - 1; l++) {
+            cout << temp_potato.ip[l] << ",";
+          }
+	  cout << temp_potato.ip[temp_potato.count - 1] << endl;
+	  cout << "Hops" << temp_potato.hops << endl;
+	  cout << "Count" << temp_potato.count << endl;
+	  
+
+
+	  freeaddrinfo(server_info_list);
+	  close(server_fd); 
+	  freeaddrinfo(host_info_list);
+	  close(socket_fd);
+	  
   return 0;
 }

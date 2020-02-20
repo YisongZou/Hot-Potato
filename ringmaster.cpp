@@ -160,18 +160,27 @@ int main(int argc, char * argv[]) {
   send(player_fd[0], Connect.c_str(), strlen(Connect.c_str()), 0);
 
   //////////////////////////////////////////Start to send the potato
-  sleep(2);
+  //  sleep(2);
   potato my_potato;
   my_potato.hops = num_hops;
   my_potato.count = 0;
-  
-  for (int m = 0; m < num_hops; m++) {
-    my_potato.ip[m] = '0';
-  }
-  srand((unsigned int)time(NULL));
-  int random = rand() % (num_players - 1);
-  send(player_fd[random], &my_potato, sizeof(my_potato), 0);
 
+  potato fake_potato;
+  fake_potato.hops = 0;
+  fake_potato.count = 0;
+  
+memset(my_potato.ip, '\0', sizeof(my_potato.ip));
+memset(fake_potato.ip, '\0', sizeof(fake_potato.ip));
+
+ srand((unsigned int)time(NULL));
+  int random = rand() % (num_players);
+  send(player_fd[random], &my_potato, sizeof(my_potato), 0);
+  for(int q = 0 ; q < num_players; q++){
+    if(q != random){
+    send(player_fd[q], &fake_potato, sizeof(fake_potato), 0);
+  }
+  }
+  
   int n = player_fd[num_players - 1] + 1;
   int rv;
 
@@ -198,9 +207,7 @@ int main(int argc, char * argv[]) {
         potato temp_potato;
         temp_potato.count = num_hops;
         temp_potato.hops = 0;
-        for (int n = 0; n < num_hops; n++) {
-          temp_potato.ip[n] = '0';
-        }
+        memset(temp_potato.ip, '\0', sizeof(temp_potato.ip));
         if (FD_ISSET(player_fd[i], &readfds)) {
           recv(player_fd[i], &temp_potato, sizeof(temp_potato), 0);
           cout << "Trace of potato:" << endl;
