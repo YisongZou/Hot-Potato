@@ -300,6 +300,8 @@ int main(int argc, char * argv[]) {
   temp_potato.hops = 0;
   memset(temp_potato.ip, '\0', sizeof(temp_potato.ip));
   recv(socket_fd, &temp_potato, sizeof(temp_potato), 0);
+  cout<<temp_potato.ip[0]<<endl;
+  cout<<temp_potato.ip[1]<<endl;
   temp_potato.ip[temp_potato.count] = player_id[0];
   cout << "Count" <<temp_potato.count <<  endl;
   temp_potato.count++;
@@ -332,7 +334,6 @@ int main(int argc, char * argv[]) {
   }
   int rv;
   while (1) {
-    sleep(1);
     fd_set readfds;
     FD_ZERO(&readfds);
     FD_SET(client_connection_fd, &readfds);
@@ -347,6 +348,8 @@ int main(int argc, char * argv[]) {
     else {
       // one or both of the descriptors have data
       potato new_potato;
+      new_potato.hops = 0;
+      new_potato.count = 0;
       memset(new_potato.ip, '\0', sizeof(new_potato.ip));
       //Potato from right client
       if (FD_ISSET(client_connection_fd, &readfds)) {
@@ -369,10 +372,12 @@ int main(int argc, char * argv[]) {
           srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
+	    sleep(1);
             send(client_fd, &new_potato, sizeof(new_potato), 0);
 	    continue;
 	  }
           else {
+	    sleep(1);
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
 	    continue;
 	  }
@@ -399,10 +404,12 @@ int main(int argc, char * argv[]) {
           srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
+	    sleep(1);
             send(client_fd, &new_potato, sizeof(new_potato), 0);
 	    continue;
 	  }
           else {
+	    sleep(1);
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
 	    continue;
 	  }

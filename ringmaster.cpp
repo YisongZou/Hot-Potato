@@ -170,7 +170,9 @@ int main(int argc, char * argv[]) {
   fake_potato.count = 0;
   
 memset(my_potato.ip, '\0', sizeof(my_potato.ip));
-memset(fake_potato.ip, '\0', sizeof(fake_potato.ip));
+ my_potato.ip[0] = '*';
+ my_potato.ip[1] = '&';
+ memset(fake_potato.ip, '\0', sizeof(fake_potato.ip));
 
  srand((unsigned int)time(NULL));
   int random = rand() % (num_players);
