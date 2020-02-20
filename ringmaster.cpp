@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "helper.hpp"
+#include "potato.hpp"
 using namespace std;
 
 void * get_in_addr(struct sockaddr * sa) {
@@ -17,7 +18,8 @@ void * get_in_addr(struct sockaddr * sa) {
 }
 
 int main(int argc, char * argv[]) {
-  //Check if the number of command line arguments is correct
+
+    //Check if the number of command line arguments is correct
   if (argc != 4) {
     cerr << "Wrong number of command line arguments\n Usage: ringmaster <port_num> "
             "<num_players> <num_hops>\n";
@@ -97,7 +99,7 @@ int main(int argc, char * argv[]) {
       cerr << "Error: cannot accept connection on socket" << endl;
       return -1;
     }  //if
-    if (socket_addr.ss_family == AF_INET) {
+        if (socket_addr.ss_family == AF_INET) {
       char ip4[INET_ADDRSTRLEN];
       inet_ntop(
           AF_INET, get_in_addr((struct sockaddr *)&socket_addr), ip4, INET_ADDRSTRLEN);
@@ -157,6 +159,60 @@ int main(int argc, char * argv[]) {
   string Connect = "Connect";
   send(player_fd[0], Connect.c_str(), strlen(Connect.c_str()), 0);
 
+  //////////////////////////////////////////Start to send the potato
+  sleep(2);
+  potato my_potato;
+  my_potato.hops = num_hops;
+  my_potato.count = 0;
+  
+  for (int m = 0; m < num_hops; m++) {
+    my_potato.ip[m] = '0';
+  }
+  srand((unsigned int)time(NULL));
+  int random = rand() % (num_players - 1);
+  send(player_fd[random], &my_potato, sizeof(my_potato), 0);
+
+  int n = player_fd[num_players - 1] + 1;
+  int rv;
+
+  fd_set readfds;
+     FD_ZERO(&readfds);
+     for(int m = 0 ; m < num_players; m++){
+    FD_SET(player_fd[m], &readfds);
+  }
+     //fd_set writefds;
+      // clear the set ahead of time
+      
+  FD_ZERO(&readfds);
+  //FD_ZERO(&writefds);
+   rv = select(n, &readfds, NULL, NULL, NULL);
+
+  if (rv == -1) {
+    cerr << "Error in select" << endl;
+    return -1;  // error occurred in select()
+    
+  }
+  else {
+  // one or both of the descriptors have data
+         for (int i = 0; i < num_players; i++) {
+        potato temp_potato;
+        temp_potato.count = num_hops;
+        temp_potato.hops = 0;
+        for (int n = 0; n < num_hops; n++) {
+          temp_potato.ip[n] = '0';
+        }
+        if (FD_ISSET(player_fd[i], &readfds)) {
+          recv(player_fd[i], &temp_potato, sizeof(temp_potato), 0);
+          cout << "Trace of potato:" << endl;
+          for (int l = 0; l < num_hops - 1; l++) {
+            cout << temp_potato.ip[l] << ",";
+          }
+          cout << temp_potato.ip[num_hops] << endl;
+        }
+      }
+      }
+    
+  
   freeaddrinfo(host_info_list);
   close(master_fd);
 
