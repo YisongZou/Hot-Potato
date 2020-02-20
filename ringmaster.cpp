@@ -189,11 +189,11 @@ memset(fake_potato.ip, '\0', sizeof(fake_potato.ip));
      for(int m = 0 ; m < num_players; m++){
     FD_SET(player_fd[m], &readfds);
   }
-     //fd_set writefds;
+     
       // clear the set ahead of time
       
   FD_ZERO(&readfds);
-  //FD_ZERO(&writefds);
+ 
    rv = select(n, &readfds, NULL, NULL, NULL);
 
   if (rv == -1) {

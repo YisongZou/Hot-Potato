@@ -310,9 +310,100 @@ int status_server;
 	  cout << temp_potato.ip[temp_potato.count - 1] << endl;
 	  cout << "Hops" << temp_potato.hops << endl;
 	  cout << "Count" << temp_potato.count << endl;
+	  //If Get the real potato, send it
+	  if(temp_potato.hops != 0){
+	    temp_potato.hops --;
+	    srand((unsigned int)time(NULL)  +atoi(player_id.c_str()));
+	     int random = rand() % (2);
+	     if(random == 0){
+	       send(client_fd, &temp_potato, sizeof(temp_potato), 0);
+	     }
+	     else{
+	       send(server_fd, &temp_potato, sizeof(temp_potato), 0);
+	     }
+	  }
+	  ///////////////////// //If did not get the potato, start selecting
+	  int n = client_fd + 1;
+	  if(server_fd > client_fd){
+	    n = server_fd + 1;
+	  }
+	  int rv;
+	  while(1){
+	  fd_set readfds;
+	  FD_ZERO(&readfds);
+	  FD_SET(client_fd, &readfds);
+	  FD_SET(server_fd, &readfds);
+	  rv = select(n, &readfds, NULL, NULL, NULL);
 	  
+	  if (rv == -1) {
+	    cerr << "Error in select" << endl;
+	    return -1;
+	    // error occurred in select()
+	  }
+	  else {
+	    // one or both of the descriptors have data
+	    potato new_potato;
+	    memset(new_potato.ip, '\0', sizeof(new_potato.ip));
+	    //Potato from server
+	      if (FD_ISSET(server_fd, &readfds)) {
+		recv(server_fd, &new_potato, sizeof(new_potato), 0);
+		temp_potato.ip[temp_potato.count] = player_id[0];
+		temp_potato.count++;
+		temp_potato.hops--;
+		cout << "Trace of potato:" << endl;
+		for (int l = 0; l < temp_potato.count - 1; l++) {
+		  cout << temp_potato.ip[l] << ",";
+		}
+		cout << temp_potato.ip[temp_potato.count] << endl;
+		if(temp_potato.hops == 0){
+		  //End the game
+		  send(socket_fd, &new_potato, sizeof(new_potato), 0);
+		}
+		else{
+		  //Continue sending
+		  srand((unsigned int)time(NULL)  +atoi(player_id.c_str()));
+             int random = rand() % (2);
+             if(random == 0){
+               send(client_fd, &new_potato, sizeof(new_potato), 0);
+             }
+             else{
+               send(server_fd, &new_potato, sizeof(new_potato), 0);
+             }
+		}
+	      }
+	      //Potato from server
+	      if (FD_ISSET(client_fd, &readfds)) {
+                recv(client_fd, &new_potato, sizeof(new_potato), 0);
+                temp_potato.ip[temp_potato.count] = player_id[0];
+                temp_potato.count++;
+          	temp_potato.hops--;
+                cout << "Trace of potato:" << endl;
+                for (int l = 0; l < temp_potato.count - 1; l++) {
+                  cout << temp_potato.ip[l] << ",";
+                }
+                cout << temp_potato.ip[temp_potato.count] << endl;
+		if(temp_potato.hops == 0){
+		  //End the game
+                  send(socket_fd, &new_potato, sizeof(new_potato), 0);
+                }
+                else{
+		  //Continue sending
+                  srand((unsigned int)time(NULL)  + atoi(player_id.c_str()));
+             int random = rand() % (2);
+             if(random == 0){
+               send(client_fd, &new_potato, sizeof(new_potato), 0);
+             }
+             else{
+               send(server_fd, &new_potato, sizeof(new_potato), 0);
+             }
+                }
+              }
+	  }
+	  }
+	  }
 
-
+	  
+     
 	  freeaddrinfo(server_info_list);
 	  close(server_fd); 
 	  freeaddrinfo(host_info_list);
