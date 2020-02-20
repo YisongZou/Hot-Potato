@@ -73,6 +73,7 @@ int main(int argc, char * argv[]) {
   const char * message = "Ready!";
   send(socket_fd, message, strlen(message), 0);
 
+  int client_connection_fd;
   int status_server;
   int server_fd;
   struct addrinfo server_info;
@@ -135,7 +136,7 @@ int main(int argc, char * argv[]) {
     cout << "Waiting for connection on port " << server_port << endl;
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
-    int client_connection_fd;
+    //int client_connection_fd;
     client_connection_fd =
         accept(server_fd, (struct sockaddr *)&socket_addr, &socket_addr_len);
     if (client_connection_fd == -1) {
@@ -208,8 +209,8 @@ int main(int argc, char * argv[]) {
   const char * message_left = "hi there!";
   send(client_fd, message_left, strlen(message), 0);
 
-  freeaddrinfo(client_info_list);
-  close(client_fd);
+  // freeaddrinfo(client_info_list);
+  // close(client_fd);
 
   ///////////////The other players except for player0  establish as server later
   if (player_id != "0") {
@@ -265,7 +266,7 @@ int main(int argc, char * argv[]) {
     cout << "Waiting for connection on port " << server_port << endl;
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
-    int client_connection_fd;
+    //int client_connection_fd;
     client_connection_fd =
         accept(server_fd, (struct sockaddr *)&socket_addr, &socket_addr_len);
     if (client_connection_fd == -1) {
@@ -293,13 +294,14 @@ int main(int argc, char * argv[]) {
   cout << "hostname:" << host_name << endl;
   */
 
-  //Recieve potato from ringmaster
+  ////////////////////////// //Recieve potato from ringmaster
   potato temp_potato;
   temp_potato.count = 0;
   temp_potato.hops = 0;
   memset(temp_potato.ip, '\0', sizeof(temp_potato.ip));
   recv(socket_fd, &temp_potato, sizeof(temp_potato), 0);
   temp_potato.ip[temp_potato.count] = player_id[0];
+  cout << "Count" <<temp_potato.count <<  endl;
   temp_potato.count++;
   cout << "Trace of potato:" << endl;
   for (int l = 0; l < temp_potato.count - 1; l++) {
@@ -313,24 +315,28 @@ int main(int argc, char * argv[]) {
     temp_potato.hops--;
     srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
     int random = rand() % (2);
+    cout << "Random:" << random << endl;
     if (random == 0) {
       send(client_fd, &temp_potato, sizeof(temp_potato), 0);
+      cout << "left"<<endl;
     }
     else {
-      send(server_fd, &temp_potato, sizeof(temp_potato), 0);
+      send(client_connection_fd, &temp_potato, sizeof(temp_potato), 0);
+      cout << "right"<<endl;
     }
   }
   ///////////////////// //If did not get the potato, start selecting
-  int n = client_fd + 1;
-  if (server_fd > client_fd) {
-    n = server_fd + 1;
+  int n = client_connection_fd + 1;
+  if (client_fd > client_connection_fd) {
+    n = client_fd + 1;
   }
   int rv;
   while (1) {
+    sleep(1);
     fd_set readfds;
     FD_ZERO(&readfds);
+    FD_SET(client_connection_fd, &readfds);
     FD_SET(client_fd, &readfds);
-    FD_SET(server_fd, &readfds);
     rv = select(n, &readfds, NULL, NULL, NULL);
 
     if (rv == -1) {
@@ -342,12 +348,12 @@ int main(int argc, char * argv[]) {
       // one or both of the descriptors have data
       potato new_potato;
       memset(new_potato.ip, '\0', sizeof(new_potato.ip));
-      //Potato from server
-      if (FD_ISSET(server_fd, &readfds)) {
-        recv(server_fd, &new_potato, sizeof(new_potato), 0);
-        temp_potato.ip[temp_potato.count] = player_id[0];
-        temp_potato.count++;
-        temp_potato.hops--;
+      //Potato from right client
+      if (FD_ISSET(client_connection_fd, &readfds)) {
+        recv(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	temp_potato.count++;
+	temp_potato.ip[temp_potato.count] = player_id[0];
+	temp_potato.hops--;
         cout << "Trace of potato:" << endl;
         for (int l = 0; l < temp_potato.count - 1; l++) {
           cout << temp_potato.ip[l] << ",";
@@ -356,25 +362,28 @@ int main(int argc, char * argv[]) {
         if (temp_potato.hops == 0) {
           //End the game
           send(socket_fd, &new_potato, sizeof(new_potato), 0);
-        }
+	  break;
+	}
         else {
           //Continue sending
           srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
             send(client_fd, &new_potato, sizeof(new_potato), 0);
-          }
+	    continue;
+	  }
           else {
-            send(server_fd, &new_potato, sizeof(new_potato), 0);
-          }
+            send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	    continue;
+	  }
         }
       }
       //Potato from server
-      if (FD_ISSET(client_fd, &readfds)) {
-        recv(client_fd, &new_potato, sizeof(new_potato), 0);
-        temp_potato.ip[temp_potato.count] = player_id[0];
-        temp_potato.count++;
-        temp_potato.hops--;
+      if (FD_ISSET(client_connection_fd, &readfds)) {
+        recv(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	temp_potato.count++;	
+	temp_potato.ip[temp_potato.count] = player_id[0];
+	temp_potato.hops--;
         cout << "Trace of potato:" << endl;
         for (int l = 0; l < temp_potato.count - 1; l++) {
           cout << temp_potato.ip[l] << ",";
@@ -383,17 +392,20 @@ int main(int argc, char * argv[]) {
         if (temp_potato.hops == 0) {
           //End the game
           send(socket_fd, &new_potato, sizeof(new_potato), 0);
-        }
+	  break;
+	}
         else {
           //Continue sending
           srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
             send(client_fd, &new_potato, sizeof(new_potato), 0);
-          }
+	    continue;
+	  }
           else {
-            send(server_fd, &new_potato, sizeof(new_potato), 0);
-          }
+            send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	    continue;
+	  }
         }
       }
     }
@@ -403,6 +415,7 @@ int main(int argc, char * argv[]) {
   close(server_fd);
   freeaddrinfo(host_info_list);
   close(socket_fd);
-
+  freeaddrinfo(client_info_list);
+  close(client_fd);
   return 0;
 }
