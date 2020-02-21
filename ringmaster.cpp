@@ -88,8 +88,6 @@ int main(int argc, char * argv[]) {
     return -1;
   }  //if
 
-  //  cout << "Waiting for connection on port " << port << endl;
-
   //Creat the players and send them information
   for (int i = 0; i < num_players; i++) {
     struct sockaddr_storage socket_addr;
@@ -122,8 +120,9 @@ int main(int argc, char * argv[]) {
     send(player_fd[i], message, strlen(message), 0);
   }
 
-  usleep(1);
+  
   //send neighbor information
+  usleep(100);
   for (int j = 0; j < num_players; j++) {
     string left_ip;
     string right_ip;
@@ -154,14 +153,13 @@ int main(int argc, char * argv[]) {
   for (int k = 1; k < num_players; k++) {
     string Connect = "Connect";
     send(player_fd[k], Connect.c_str(), strlen(Connect.c_str()), 0);
-    usleep(500);
+    usleep(1000);
   }
   string Connect = "Connect";
   send(player_fd[0], Connect.c_str(), strlen(Connect.c_str()), 0);
 
   //////////////////////////////////////////Start to send the potato
-  //  sleep(2);
-  potato my_potato;
+   potato my_potato;
   my_potato.hops = num_hops;
   my_potato.count = 0;
 

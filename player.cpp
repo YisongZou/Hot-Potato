@@ -84,14 +84,6 @@ int main(int argc, char * argv[]) {
   ///////////////As the server of the right player
   //The players except for player 0 establishes as clients first, the player 0 establishes first as server  and  start to shape the ring
   if (player_id == "0") {
-    /*int status_server;
-    int server_fd;
-    struct addrinfo server_info;
-    struct addrinfo * server_info_list;
-    const char * server_hostname = NULL;
-    int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
-    const char * server_port = to_string(server_port_num).c_str();
-    */
     memset(&server_info, 0, sizeof(server_info));
 
     server_info.ai_family = AF_UNSPEC;
@@ -144,16 +136,6 @@ int main(int argc, char * argv[]) {
       return -1;
     }  //if
 
-    //memset(buffer, '\0', sizeof(buffer));
-    // recv(client_connection_fd, buffer, 512, 0);
-    //buffer[511] = 0;
-
-    //    cout << "Server received: " << buffer << endl;
-
-    /*
-    freeaddrinfo(server_info_list);
-    close(server_fd);
-    */
   }
 
   memset(buffer, '\0', sizeof(buffer));  //Reset buffer
@@ -205,22 +187,8 @@ int main(int argc, char * argv[]) {
     return -1;
   }  //if
 
-  // const char * message_left = "hi there!";
-  // send(client_fd, message_left, strlen(message), 0);
-
-  // freeaddrinfo(client_info_list);
-  // close(client_fd);
-
   ///////////////The other players except for player0  establish as server later
   if (player_id != "0") {
-    /*int status_server;
-    int server_fd;
-    struct addrinfo server_info;
-    struct addrinfo * server_info_list;
-    const char * server_hostname = NULL;
-    int server_port_num = atoi(player_id.c_str()) + atoi(port) + 1;
-    const char * server_port = to_string(server_port_num).c_str();
-    */
     memset(&server_info, 0, sizeof(server_info));
 
     server_info.ai_family = AF_UNSPEC;
@@ -273,44 +241,17 @@ int main(int argc, char * argv[]) {
       return -1;
     }  //if
 
-    //  memset(buffer, '\0', sizeof(buffer));
-    // recv(client_connection_fd, buffer, 512, 0);
-    //buffer[511] = 0;
-
-    //cout << "Server received: " << buffer << endl;
-    /*
-    freeaddrinfo(server_info_list);
-    close(server_fd);
-    */
   }
 
-  //////////////////////////////////////////////
-  /*char host_name[128];
-  if (gethostname(host_name, sizeof(host_name)) == -1) {
-    cerr << "Error: cannot gethostname" << endl;
-    return -1;
-  }
-  cout << "hostname:" << host_name << endl;
-  */
-
-  ////////////////////////// //Recieve potato from ringmaster
   potato temp_potato;
   temp_potato.count = 0;
   temp_potato.hops = 0;
   memset(temp_potato.ip, '\0', sizeof(temp_potato.ip));
   recv(socket_fd, &temp_potato, sizeof(temp_potato), 0);
-  cout<<temp_potato.ip[0]<<endl;
-  cout<<temp_potato.ip[1]<<endl;
   temp_potato.ip[temp_potato.count] = player_id[0];
   //  cout << "Count" <<temp_potato.count <<  endl;
   temp_potato.count++;
-  // cout << "Trace of potato:" << endl;
-  // for (int l = 0; l < temp_potato.count - 1; l++) {
-  //  cout << temp_potato.ip[l] << ",";
-  // }
-  // cout << temp_potato.ip[temp_potato.count - 1] << endl;
-  //cout << "Hops" << temp_potato.hops << endl;
-  // cout << "Count" << temp_potato.count << endl;
+
   //If Get the real potato, send it
   if(temp_potato.hops == 0){
     cout << "I’m it"<<endl;
@@ -368,11 +309,16 @@ int main(int argc, char * argv[]) {
     else {
       //End the game
       if (FD_ISSET(socket_fd, &readfds)) {
-	break;
+	//      cout<<"Game ends"<<endl;
+      break;
       }
       // one or both of the descriptors have data
       //Potato from right client
-      if (FD_ISSET(client_connection_fd, &readfds)) {
+     else if (FD_ISSET(client_connection_fd, &readfds)) {
+	if (FD_ISSET(socket_fd, &readfds)) {
+	  //  cout<<"Game ends"<<endl;
+        break;
+      }
 	potato new_potato;
 	new_potato.count = 0;
 	new_potato.hops = 0;
@@ -381,11 +327,6 @@ int main(int argc, char * argv[]) {
 	new_potato.count++;
 	new_potato.ip[new_potato.count -1 ] = player_id[0];
 	new_potato.hops--;
-	//        cout << "Trace of potato:" << endl;
-	// for (int l = 0; l < new_potato.count - 1; l++) {
-        //  cout << new_potato.ip[l] << ",";
-	// }
-	// cout << new_potato.ip[new_potato.count-1] << endl;
         if (new_potato.hops == 0) {
           //End the game
 	  cout << "I’m it"<<endl;
@@ -393,7 +334,6 @@ int main(int argc, char * argv[]) {
 	}
         else {
           //Continue sending
-	  //          srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
 	    if(player_id != "0"){
@@ -403,6 +343,7 @@ int main(int argc, char * argv[]) {
         cout << "Sending potato to " << atoi(num_player.c_str()) -1 << endl;
       }
             send(client_fd, &new_potato, sizeof(new_potato), 0);
+	    continue;
 	  }
           else {
 	    if(atoi(player_id.c_str()) != atoi(num_player.c_str()) - 1){
@@ -412,11 +353,16 @@ int main(int argc, char * argv[]) {
         cout << "Sending potato to " << 0 << endl;
       }
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	    continue;
 	  }
         }
       }
       //Potato from server
-      if (FD_ISSET(client_fd, &readfds)) {
+     else if (FD_ISSET(client_fd, &readfds)) {
+	if (FD_ISSET(socket_fd, &readfds)) {
+	  //cout<<"Game ends"<<endl;
+        break;
+      }
 	potato new_potato;
 	new_potato.count = 0;
 	new_potato.hops = 0;
@@ -425,11 +371,7 @@ int main(int argc, char * argv[]) {
 	new_potato.count++;	
 	new_potato.ip[new_potato.count-1] = player_id[0];
 	new_potato.hops--;
-        //cout << "Trace of potato:" << endl;
-        //for (int l = 0; l < new_potato.count - 1; l++) {
-	//cout << new_potato.ip[l] << ",";
-	// }
-        //cout << new_potato.ip[new_potato.count - 1] << endl;
+
         if (new_potato.hops == 0) {
           //End the game
 	  cout << "I’m it"<<endl;
@@ -438,7 +380,6 @@ int main(int argc, char * argv[]) {
 	}
         else {
           //Continue sending
-	  // srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
 	    if(player_id != "0"){
@@ -448,6 +389,7 @@ int main(int argc, char * argv[]) {
         cout << "Sending potato to " << atoi(num_player.c_str()) -1 << endl;
       }
             send(client_fd, &new_potato, sizeof(new_potato), 0);
+	    continue;
 	  }
           else {
 	    if(atoi(player_id.c_str()) != atoi(num_player.c_str()) - 1){
@@ -457,6 +399,7 @@ int main(int argc, char * argv[]) {
         cout << "Sending potato to " << 0 << endl;
       }
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	    continue;
 	  }
         }
       }
