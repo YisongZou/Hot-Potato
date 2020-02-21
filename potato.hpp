@@ -4,6 +4,6 @@
 struct Potato {
   int hops;
   int count;
-  char ip[100];
+  char ip[511];
 };
 typedef struct Potato potato;

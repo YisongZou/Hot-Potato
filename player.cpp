@@ -144,8 +144,8 @@ int main(int argc, char * argv[]) {
       return -1;
     }  //if
 
-    memset(buffer, '\0', sizeof(buffer));
-    recv(client_connection_fd, buffer, 512, 0);
+    //memset(buffer, '\0', sizeof(buffer));
+    // recv(client_connection_fd, buffer, 512, 0);
     //buffer[511] = 0;
 
     //    cout << "Server received: " << buffer << endl;
@@ -206,8 +206,8 @@ int main(int argc, char * argv[]) {
     return -1;
   }  //if
 
-  const char * message_left = "hi there!";
-  send(client_fd, message_left, strlen(message), 0);
+  // const char * message_left = "hi there!";
+  // send(client_fd, message_left, strlen(message), 0);
 
   // freeaddrinfo(client_info_list);
   // close(client_fd);
@@ -274,8 +274,8 @@ int main(int argc, char * argv[]) {
       return -1;
     }  //if
 
-    memset(buffer, '\0', sizeof(buffer));
-    recv(client_connection_fd, buffer, 512, 0);
+    //  memset(buffer, '\0', sizeof(buffer));
+    // recv(client_connection_fd, buffer, 512, 0);
     //buffer[511] = 0;
 
     //cout << "Server received: " << buffer << endl;
@@ -327,6 +327,9 @@ int main(int argc, char * argv[]) {
       cout << "right"<<endl;
     }
   }
+
+  
+ 
   ///////////////////// //If did not get the potato, start selecting
   int n = client_connection_fd + 1;
   if (client_fd > client_connection_fd) {
@@ -338,6 +341,7 @@ int main(int argc, char * argv[]) {
     FD_ZERO(&readfds);
     FD_SET(client_connection_fd, &readfds);
     FD_SET(client_fd, &readfds);
+    FD_SET(socket_fd, &readfds);
     rv = select(n, &readfds, NULL, NULL, NULL);
 
     if (rv == -1) {
@@ -346,23 +350,27 @@ int main(int argc, char * argv[]) {
       // error occurred in select()
     }
     else {
+      //End the game
+      if (FD_ISSET(socket_fd, &readfds)) {
+	break;
+      }
       // one or both of the descriptors have data
-      potato new_potato;
-      new_potato.hops = 0;
-      new_potato.count = 0;
-      memset(new_potato.ip, '\0', sizeof(new_potato.ip));
       //Potato from right client
       if (FD_ISSET(client_connection_fd, &readfds)) {
-        recv(client_connection_fd, &new_potato, sizeof(new_potato), 0);
-	temp_potato.count++;
-	temp_potato.ip[temp_potato.count] = player_id[0];
-	temp_potato.hops--;
+	potato new_potato;
+	new_potato.count = 0;
+	new_potato.hops = 0;
+	memset(new_potato.ip, '\0', sizeof(new_potato.ip));
+	recv(client_connection_fd, &new_potato, sizeof(new_potato), 0);
+	new_potato.count++;
+	new_potato.ip[new_potato.count -1 ] = player_id[0];
+	new_potato.hops--;
         cout << "Trace of potato:" << endl;
-        for (int l = 0; l < temp_potato.count - 1; l++) {
-          cout << temp_potato.ip[l] << ",";
+        for (int l = 0; l < new_potato.count - 1; l++) {
+          cout << new_potato.ip[l] << ",";
         }
-        cout << temp_potato.ip[temp_potato.count] << endl;
-        if (temp_potato.hops == 0) {
+        cout << new_potato.ip[new_potato.count-1] << endl;
+        if (new_potato.hops == 0) {
           //End the game
           send(socket_fd, &new_potato, sizeof(new_potato), 0);
 	  break;
@@ -372,29 +380,29 @@ int main(int argc, char * argv[]) {
           srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
-	    sleep(1);
             send(client_fd, &new_potato, sizeof(new_potato), 0);
-	    continue;
 	  }
           else {
-	    sleep(1);
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
-	    continue;
 	  }
         }
       }
       //Potato from server
-      if (FD_ISSET(client_connection_fd, &readfds)) {
-        recv(client_connection_fd, &new_potato, sizeof(new_potato), 0);
-	temp_potato.count++;	
-	temp_potato.ip[temp_potato.count] = player_id[0];
-	temp_potato.hops--;
+      if (FD_ISSET(client_fd, &readfds)) {
+	potato new_potato;
+	new_potato.count = 0;
+	new_potato.hops = 0;
+	memset(new_potato.ip, '\0', sizeof(new_potato.ip));
+	recv(client_fd, &new_potato, sizeof(new_potato), 0);
+	new_potato.count++;	
+	new_potato.ip[new_potato.count-1] = player_id[0];
+	new_potato.hops--;
         cout << "Trace of potato:" << endl;
-        for (int l = 0; l < temp_potato.count - 1; l++) {
-          cout << temp_potato.ip[l] << ",";
+        for (int l = 0; l < new_potato.count - 1; l++) {
+          cout << new_potato.ip[l] << ",";
         }
-        cout << temp_potato.ip[temp_potato.count] << endl;
-        if (temp_potato.hops == 0) {
+        cout << new_potato.ip[new_potato.count - 1] << endl;
+        if (new_potato.hops == 0) {
           //End the game
           send(socket_fd, &new_potato, sizeof(new_potato), 0);
 	  break;
@@ -404,14 +412,10 @@ int main(int argc, char * argv[]) {
           srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
-	    sleep(1);
             send(client_fd, &new_potato, sizeof(new_potato), 0);
-	    continue;
 	  }
           else {
-	    sleep(1);
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
-	    continue;
 	  }
         }
       }

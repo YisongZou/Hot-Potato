@@ -169,20 +169,18 @@ int main(int argc, char * argv[]) {
   fake_potato.hops = 0;
   fake_potato.count = 0;
   
-memset(my_potato.ip, '\0', sizeof(my_potato.ip));
- my_potato.ip[0] = '*';
- my_potato.ip[1] = '&';
- memset(fake_potato.ip, '\0', sizeof(fake_potato.ip));
+  memset(my_potato.ip, '\0', sizeof(my_potato.ip));
+  memset(fake_potato.ip, '\0', sizeof(fake_potato.ip));
 
- srand((unsigned int)time(NULL));
+  srand((unsigned int)time(NULL));
   int random = rand() % (num_players);
-  send(player_fd[random], &my_potato, sizeof(my_potato), 0);
   for(int q = 0 ; q < num_players; q++){
     if(q != random){
     send(player_fd[q], &fake_potato, sizeof(fake_potato), 0);
+    }
   }
-  }
-  
+ send(player_fd[random], &my_potato, sizeof(my_potato), 0);
+   
   int n = player_fd[num_players - 1] + 1;
   int rv;
 
@@ -192,11 +190,7 @@ memset(my_potato.ip, '\0', sizeof(my_potato.ip));
     FD_SET(player_fd[m], &readfds);
   }
      
-      // clear the set ahead of time
-      
-  FD_ZERO(&readfds);
- 
-   rv = select(n, &readfds, NULL, NULL, NULL);
+      rv = select(n, &readfds, NULL, NULL, NULL);
 
   if (rv == -1) {
     cerr << "Error in select" << endl;
@@ -216,10 +210,14 @@ memset(my_potato.ip, '\0', sizeof(my_potato.ip));
           for (int l = 0; l < num_hops - 1; l++) {
             cout << temp_potato.ip[l] << ",";
           }
-          cout << temp_potato.ip[num_hops] << endl;
-        }
-      }
-      }
+          cout << temp_potato.ip[num_hops - 1 ] << endl;
+	  for (int w = 0; w < num_players; w++) {
+	    send(player_fd[w], &fake_potato, sizeof(fake_potato), 0);
+	  }
+	  break; 
+	}
+	 }
+  }
     
   
   freeaddrinfo(host_info_list);
