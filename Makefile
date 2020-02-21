@@ -2,7 +2,7 @@ TARGETS=player ringmaster
 
 all: $(TARGETS)
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) *~
 
 player: player.cpp
 	g++ -g -o $@ $<

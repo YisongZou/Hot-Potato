@@ -111,7 +111,7 @@ int main(int argc, char * argv[]) {
           AF_INET6, get_in_addr((struct sockaddr *)&socket_addr), ip6, INET6_ADDRSTRLEN);
       player_ip[i] = ip6;
     }
-    cout << "/" << player_ip[i] << "/" << endl;
+	//    cout << "/" << player_ip[i] << "/" << endl;
     stringstream temp;
     temp << "Player No:";
     temp << i;
@@ -166,7 +166,7 @@ int main(int argc, char * argv[]) {
   my_potato.count = 0;
 
   potato fake_potato;
-  fake_potato.hops = 0;
+  fake_potato.hops = -1;
   fake_potato.count = 0;
   
   memset(my_potato.ip, '\0', sizeof(my_potato.ip));
@@ -179,6 +179,7 @@ int main(int argc, char * argv[]) {
     send(player_fd[q], &fake_potato, sizeof(fake_potato), 0);
     }
   }
+  cout <<"Ready to start the game, sending potato to player " << random << endl;
  send(player_fd[random], &my_potato, sizeof(my_potato), 0);
    
   int n = player_fd[num_players - 1] + 1;
@@ -207,10 +208,15 @@ int main(int argc, char * argv[]) {
         if (FD_ISSET(player_fd[i], &readfds)) {
           recv(player_fd[i], &temp_potato, sizeof(temp_potato), 0);
           cout << "Trace of potato:" << endl;
-          for (int l = 0; l < num_hops - 1; l++) {
+	  if(num_hops != 0){
+	  for (int l = 0; l < num_hops - 1; l++) {
             cout << temp_potato.ip[l] << ",";
           }
           cout << temp_potato.ip[num_hops - 1 ] << endl;
+	  }
+	  else{
+	    cout << temp_potato.ip[0] << endl;
+	  }
 	  for (int w = 0; w < num_players; w++) {
 	    send(player_fd[w], &fake_potato, sizeof(fake_potato), 0);
 	  }

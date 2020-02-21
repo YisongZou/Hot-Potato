@@ -42,7 +42,7 @@ int main(int argc, char * argv[]) {
     return -1;
   }  //if
 
-  cout << "Connecting to " << hostname << " on port " << port << "..." << endl;
+  //  cout << "Connecting to " << hostname << " on port " << port << "..." << endl;
 
   status = connect(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
   if (status == -1) {
@@ -133,7 +133,7 @@ int main(int argc, char * argv[]) {
       return -1;
     }  //if
 
-    cout << "Waiting for connection on port " << server_port << endl;
+    //cout << "Waiting for connection on port " << server_port << endl;
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
     //int client_connection_fd;
@@ -195,8 +195,7 @@ int main(int argc, char * argv[]) {
     return -1;
   }  //if
 
-  cout << "Connecting to " << client_hostname << " on port " << client_port << "..."
-       << endl;
+  // cout << "Connecting to " << client_hostname << " on port " << client_port << "..."<< endl;
 
   client_status =
       connect(client_fd, client_info_list->ai_addr, client_info_list->ai_addrlen);
@@ -263,7 +262,7 @@ int main(int argc, char * argv[]) {
       return -1;
     }  //if
 
-    cout << "Waiting for connection on port " << server_port << endl;
+    //    cout << "Waiting for connection on port " << server_port << endl;
     struct sockaddr_storage socket_addr;
     socklen_t socket_addr_len = sizeof(socket_addr);
     //int client_connection_fd;
@@ -303,28 +302,44 @@ int main(int argc, char * argv[]) {
   cout<<temp_potato.ip[0]<<endl;
   cout<<temp_potato.ip[1]<<endl;
   temp_potato.ip[temp_potato.count] = player_id[0];
-  cout << "Count" <<temp_potato.count <<  endl;
+  //  cout << "Count" <<temp_potato.count <<  endl;
   temp_potato.count++;
-  cout << "Trace of potato:" << endl;
-  for (int l = 0; l < temp_potato.count - 1; l++) {
-    cout << temp_potato.ip[l] << ",";
-  }
-  cout << temp_potato.ip[temp_potato.count - 1] << endl;
-  cout << "Hops" << temp_potato.hops << endl;
-  cout << "Count" << temp_potato.count << endl;
+  // cout << "Trace of potato:" << endl;
+  // for (int l = 0; l < temp_potato.count - 1; l++) {
+  //  cout << temp_potato.ip[l] << ",";
+  // }
+  // cout << temp_potato.ip[temp_potato.count - 1] << endl;
+  //cout << "Hops" << temp_potato.hops << endl;
+  // cout << "Count" << temp_potato.count << endl;
   //If Get the real potato, send it
-  if (temp_potato.hops != 0) {
+  if(temp_potato.hops == 0){
+    cout << "I’m it"<<endl;
+    send(socket_fd, &temp_potato, sizeof(temp_potato), 0);
+  }
+  else if (temp_potato.hops != -1) {
     temp_potato.hops--;
     srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
     int random = rand() % (2);
-    cout << "Random:" << random << endl;
+    //cout << "Random:" << random << endl;
     if (random == 0) {
+      if(player_id != "0"){
+	cout << "Sending potato to " << atoi(player_id.c_str()) -1 << endl;
+      }
+      else{
+	cout << "Sending potato to " << atoi(num_player.c_str()) -1 << endl;
+      }
       send(client_fd, &temp_potato, sizeof(temp_potato), 0);
-      cout << "left"<<endl;
+      //cout << "left"<<endl;
     }
     else {
+      if(atoi(player_id.c_str()) != atoi(num_player.c_str()) - 1){
+        cout << "Sending potato to " << atoi(player_id.c_str())  + 1 << endl;
+      }
+      else{
+        cout << "Sending potato to " << 0 << endl;
+      }
       send(client_connection_fd, &temp_potato, sizeof(temp_potato), 0);
-      cout << "right"<<endl;
+      // cout << "right"<<endl;
     }
   }
 
@@ -335,6 +350,7 @@ int main(int argc, char * argv[]) {
   if (client_fd > client_connection_fd) {
     n = client_fd + 1;
   }
+  srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
   int rv;
   while (1) {
     fd_set readfds;
@@ -365,24 +381,36 @@ int main(int argc, char * argv[]) {
 	new_potato.count++;
 	new_potato.ip[new_potato.count -1 ] = player_id[0];
 	new_potato.hops--;
-        cout << "Trace of potato:" << endl;
-        for (int l = 0; l < new_potato.count - 1; l++) {
-          cout << new_potato.ip[l] << ",";
-        }
-        cout << new_potato.ip[new_potato.count-1] << endl;
+	//        cout << "Trace of potato:" << endl;
+	// for (int l = 0; l < new_potato.count - 1; l++) {
+        //  cout << new_potato.ip[l] << ",";
+	// }
+	// cout << new_potato.ip[new_potato.count-1] << endl;
         if (new_potato.hops == 0) {
           //End the game
+	  cout << "I’m it"<<endl;
           send(socket_fd, &new_potato, sizeof(new_potato), 0);
-	  break;
 	}
         else {
           //Continue sending
-          srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
+	  //          srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
+	    if(player_id != "0"){
+        cout << "Sending potato to " << atoi(player_id.c_str()) -1 << endl;
+      }
+      else{
+        cout << "Sending potato to " << atoi(num_player.c_str()) -1 << endl;
+      }
             send(client_fd, &new_potato, sizeof(new_potato), 0);
 	  }
           else {
+	    if(atoi(player_id.c_str()) != atoi(num_player.c_str()) - 1){
+        cout << "Sending potato to " << atoi(player_id.c_str())  + 1 << endl;
+      }
+      else{
+        cout << "Sending potato to " << 0 << endl;
+      }
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
 	  }
         }
@@ -397,24 +425,37 @@ int main(int argc, char * argv[]) {
 	new_potato.count++;	
 	new_potato.ip[new_potato.count-1] = player_id[0];
 	new_potato.hops--;
-        cout << "Trace of potato:" << endl;
-        for (int l = 0; l < new_potato.count - 1; l++) {
-          cout << new_potato.ip[l] << ",";
-        }
-        cout << new_potato.ip[new_potato.count - 1] << endl;
+        //cout << "Trace of potato:" << endl;
+        //for (int l = 0; l < new_potato.count - 1; l++) {
+	//cout << new_potato.ip[l] << ",";
+	// }
+        //cout << new_potato.ip[new_potato.count - 1] << endl;
         if (new_potato.hops == 0) {
           //End the game
-          send(socket_fd, &new_potato, sizeof(new_potato), 0);
+	  cout << "I’m it"<<endl;
+	  send(socket_fd, &new_potato, sizeof(new_potato), 0);
 	  break;
 	}
         else {
           //Continue sending
-          srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
+	  // srand((unsigned int)time(NULL) + atoi(player_id.c_str()));
           int random = rand() % (2);
           if (random == 0) {
+	    if(player_id != "0"){
+        cout << "Sending potato to " << atoi(player_id.c_str()) -1 << endl;
+      }
+      else{
+        cout << "Sending potato to " << atoi(num_player.c_str()) -1 << endl;
+      }
             send(client_fd, &new_potato, sizeof(new_potato), 0);
 	  }
           else {
+	    if(atoi(player_id.c_str()) != atoi(num_player.c_str()) - 1){
+        cout << "Sending potato to " << atoi(player_id.c_str())  + 1 << endl;
+      }
+      else{
+        cout << "Sending potato to " << 0 << endl;
+      }
             send(client_connection_fd, &new_potato, sizeof(new_potato), 0);
 	  }
         }
